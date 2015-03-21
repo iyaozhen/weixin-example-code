@@ -35,8 +35,6 @@ class wechatCallbackapiTest
                the best way is to check the validity of xml by yourself */
             libxml_disable_entity_loader(true);
             $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-            $fromUsername = $postObj->FromUserName;
-            $toUsername = $postObj->ToUserName;
             $keyword = trim($postObj->Content); // 收到的文本消息内容
             if(!empty( $keyword ))
             {
@@ -180,4 +178,4 @@ class wechatCallbackapiTest
         }
     }
 }
-// end of text.php
+// end of news.php
