@@ -1,6 +1,6 @@
 <?php
 /**
- * wechat php demo
+ * wechat 关键词回复文本消息
  */
 
 // 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
@@ -37,8 +37,9 @@ class wechatCallbackapiTest
             $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
             $fromUsername = $postObj->FromUserName;
             $toUsername = $postObj->ToUserName;
-            $keyword = trim($postObj->Content);
+            $keyword = trim($postObj->Content); // 收到的文本消息内容
             $time = time();
+            // 回复文本的格式
             $textTpl = "<xml>
 							<ToUserName><![CDATA[%s]]></ToUserName>
 							<FromUserName><![CDATA[%s]]></FromUserName>
