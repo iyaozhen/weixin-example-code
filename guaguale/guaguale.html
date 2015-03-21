@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--使用最高版本的IE渲染页面-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--设置视口（viewport）移动设备优先，user-scalable=no可以禁用页面缩放-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>刮刮乐</title>
+</head>
+<body>
+<div id="main">
+    <div class="msg">刮开查看奖项</div>
+    <div>
+        <canvas id="myCanvas"></canvas>
+    </div>
+</div>
+<!--引入jquery库-->
+<script src="http://cdn.staticfile.org/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+    // 当页面加载完毕时
+    $(document).ready(function(){
+        // 生成一个图片对象
+        var img = new Image();
+        var imgs = ['p_0.jpg','p_1.jpg'];
+        // 此处可设置中奖比率
+        var num = Math.floor(Math.random()*2);
+        var Imgsrc = imgs[num];
+
+        var canvas = $("#myCanvas"); // 获取canvas的jquery对象
+        var canvasDom = canvas[0];  // jquery对象转换成Dom对象
+        var ctx = canvasDom.getContext("2d");   // 一个2D画布
+        // 一个 320*160 的灰色矩形，用来挡住图片
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(0, 0, 320, 160);
+        // destination-out 在源图像外显示目标图像。只有源图像外的目标图像部分会被显示，源图像是透明的
+        // 这里的目标图像是刚画出的矩形，源图像是手指划过画出的圆
+        // 意思就是手指触摸画布，触摸点会变成透明，显示后面的图片
+        ctx.globalCompositeOperation = 'destination-out';
+
+        canvas.css("background-image","url("+Imgsrc+")");   // 设置画布的背景图片（中奖信息）
+
+        var remove = false;  // 默认不处于清除状态
+        // 绑定touch和鼠标事件
+        canvas.on('touchstart mousedown', eventDown);
+        canvas.on('touchmove mousemove', eventMove);
+        canvas.on('touchup mouseup', eventUp);
+
+        // 鼠标（手）移动时根据状态是否清除画布
+        function eventMove(e){
+            if(remove){
+                var offsetX = e.pageX - $(this).offset().left;
+                var offsetY = e.pageY - $(this).offset().top;
+                // 手指触摸的地方画一个圆
+                ctx.beginPath();
+                ctx.arc(offsetX, offsetY, 10, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+            e.preventDefault();
+        }
+
+        // 当按下（触屏）时进入清除状态
+        function eventDown(e){
+            remove = true;
+            e.preventDefault();
+        }
+
+        // 当鼠标（手）离开时退出清除状态
+        function eventUp(e){
+            remove = false;
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>
