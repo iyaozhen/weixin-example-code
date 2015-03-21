@@ -96,16 +96,18 @@ class wechatCallbackapiTest
                 break;
             case 'unsubscribe':	// 取消订阅
                 $tousername = $postObj->FromUserName;
-                // 可根据用户名进行删除（更新）用户信息得操作
+                // 可根据用户名进行删除（更新）用户信息等操作
                 $resultStr = '';
                 break;
             case 'CLICK':	// 自定义菜单
                 $resultStr = $this->receiveText($postObj);	// 菜单点击事件
                 break;
             case 'LOCATION':	// 用户上报地利位置
-                // 可用于实现签到功能
-                // 此功能除了需要有权限外还需要手动在后台开启
-                // 根据经纬度获取地理位置的接口：http://developer.baidu.com/map/index.php?title=webapi/guide/webservice-geocoding
+                /*
+                 * 可用于实现签到功能
+                 * 此功能除了需要有权限外，还需要手动在后台开启
+                 * 根据经纬度获取地理位置的接口：http://developer.baidu.com/map/index.php?title=webapi/guide/webservice-geocoding
+                 * */
                 $contentstr = "地利位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;

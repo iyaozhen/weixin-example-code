@@ -20,13 +20,20 @@ else{
     $sceneId = 1;
 }
 
+// https://mp.weixin.qq.com/wiki/18/28fc21e7ed87bec960651f0ce873ef8a.html
 if($type == 0){
+    // 临时二维码参数
     $post = '{"expire_seconds": 1800, "action_name": "QR_SCENE", "action_info": {"scene": {"scene_id": ' . $sceneId . '}}}';
 }
 else{
+    // 永久二维码参数
     $post = '{"action_name": "QR_LIMIT_SCENE", "action_info": {"scene": {"scene_id":  ' . $sceneId . '}}}';
 }
 
+/*
+ * 资源流上下文参数
+ * POST json数据
+ * */
 $options = array(
     'http' => array(
         'method'  => 'POST',
@@ -47,5 +54,5 @@ $ticket = $response['ticket'];
 
 echo '<html>' .
     '<img src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'">' .
-    '<p>二维码地址：<a herf="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'">https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'</a></p>' .
+    '<p>二维码地址：<a href="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'">https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'</a></p>' .
     '</html>';
