@@ -65,25 +65,25 @@ class wechatCallbackapiTest
     }
 
     // 用户事件
-    private function receiveEvent($object)
+    private function receiveEvent($postObj)
     {
-        $event = $object->Event;
+        $event = $postObj->Event;
         switch ($event) {
             case 'subscribe':	// 订阅
                 $contentstr = "欢迎订阅";
-                $resultStr = $this->ReplyText($object, $contentstr);
+                $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
             case 'unsubscribe':	// 取消订阅
-                $tousername = $object->FromUserName;
+                $tousername = $postObj->FromUserName;
                 // 可根据用户名进行删除（更新）用户信息得操作
                 $resultStr = '';
                 break;
             case 'CLICK':	// 自定义菜单
-                $resultStr = $this->receiveText($object);	// 菜单点击事件
+                $resultStr = $this->receiveText($postObj);	// 菜单点击事件
                 break;
             default :
                 $contentstr = "unknown";
-                $resultStr = $this->ReplyText($object, $contentstr);
+                $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
         }
         return  $resultStr;
@@ -138,6 +138,10 @@ class wechatCallbackapiTest
             }
             elseif($keyword == "text"){
                 $contentStr = "回复文本消息";
+                $resultStr = $this->ReplyText($postObj, $contentStr);
+            }
+            elseif($keyword == "优课急送"){
+                $contentStr = "互联网从业者终身学习平台";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             else{
