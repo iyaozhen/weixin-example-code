@@ -94,6 +94,11 @@ class wechatCallbackapiTest
             case 'CLICK':	// 自定义菜单
                 $resultStr = $this->receiveText($postObj);	// 菜单点击事件
                 break;
+            case 'LOCATION':	// 用户上报地利位置
+                // 可用于实现签到功能
+                $contentstr = "地利位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
+                $resultStr = $this->ReplyText($postObj, $contentstr);
+                break;
             default :
                 $contentstr = "unknown";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
