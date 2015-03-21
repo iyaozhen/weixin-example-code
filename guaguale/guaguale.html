@@ -42,22 +42,27 @@
 
         var remove = false;  // 默认不处于清除状态
         // 绑定touch和鼠标事件
-        canvas.on('touchstart mousedown', eventDown);
-        canvas.on('touchmove mousemove', eventMove);
-        canvas.on('touchup mouseup', eventUp);
+        canvas.on('touchstart mousedown', eventDown)
+            .on('touchmove mousemove', eventMove)
+            .on('touchup mouseup', eventUp);
 
         // 鼠标（手）移动时根据状态是否清除画布
         function eventMove(e){
+            e.preventDefault();
             if(remove){
+                e = e.originalEvent;
+                // 多点触控时以最后一个留在屏幕上的手指为准
+                if(e.changedTouches){
+                    e = e.changedTouches[e.changedTouches.length - 1];
+                }
                 var offsetX = e.pageX - $(this).offset().left;
                 var offsetY = e.pageY - $(this).offset().top;
-                // 手指触摸的地方画一个圆
+                // 手指触摸的地方画一个圆（透明）
                 ctx.beginPath();
                 ctx.arc(offsetX, offsetY, 10, 0, Math.PI * 2);
                 ctx.closePath();
                 ctx.fill();
             }
-            e.preventDefault();
         }
 
         // 当按下（触屏）时进入清除状态
