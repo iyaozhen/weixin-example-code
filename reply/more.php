@@ -60,7 +60,7 @@ class wechatCallbackapiTest
                     $openid = $postObj->FromUserName;
                     $data = file_get_contents("https://api.weixin.qq.com/cgi-bin/user/info?access_token={$accessToken}&openid={$openid}&lang=zh_CN");
                     $userData = json_decode($data, true);
-                    // 获取昵称，还可以获取其它信息，详见文档。此功能可用于微信墙
+                    // 获取昵称，还可以获取其它信息，详见官方文档。此功能可用于实现微信墙
                     $nickname = $userData['nickname'];
                     $contentstr = "{$nickname}，你好，你的位置为：{$postObj->Label}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
@@ -83,8 +83,16 @@ class wechatCallbackapiTest
         $event = $postObj->Event;
         switch ($event) {
             case 'subscribe':	// 订阅
-                $contentstr = "欢迎订阅";
-                $resultStr = $this->ReplyText($postObj, $contentstr);
+                // 存在EventKey说明是扫描带参数二维码事件
+                if(isset($postObj->EventKey)){
+                    $evenKey = $postObj->EventKey;  // 可通过key值进行相关统计
+                    $contentstr = "扫描带参数二维码事件KEY值: {$evenKey}";
+                    $resultStr = $this->ReplyText($postObj, $contentstr);
+                }
+                else{
+                    $contentstr = "欢迎订阅";
+                    $resultStr = $this->ReplyText($postObj, $contentstr);
+                }
                 break;
             case 'unsubscribe':	// 取消订阅
                 $tousername = $postObj->FromUserName;
@@ -96,7 +104,14 @@ class wechatCallbackapiTest
                 break;
             case 'LOCATION':	// 用户上报地利位置
                 // 可用于实现签到功能
+                // 此功能除了需要有权限外还需要手动在后台开启
+                // 根据经纬度获取地理位置的接口：http://developer.baidu.com/map/index.php?title=webapi/guide/webservice-geocoding
                 $contentstr = "地利位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
+                $resultStr = $this->ReplyText($postObj, $contentstr);
+                break;
+            case 'SCAN':
+                $evenKey = $postObj->EventKey;  // 可通过key值进行相关统计
+                $contentstr = "扫描带参数二维码事件KEY值: {$evenKey}";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
             default :
