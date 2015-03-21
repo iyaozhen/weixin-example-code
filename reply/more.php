@@ -140,8 +140,8 @@ class wechatCallbackapiTest
                 $contentStr = "回复文本消息";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
-            elseif($keyword == "优课急送"){
-                $contentStr = "互联网从业者终身学习平台";
+            elseif($keyword == "语音"){
+                $contentStr = "语音识别正确";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             else{
