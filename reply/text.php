@@ -1,12 +1,14 @@
 <?php
 /**
- * wechat php test
+ * wechat php demo
  */
 
-//define your token
+// 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
+
+// 认证 token
 define("TOKEN", "weixin_test");
-$wechatObj = new wechatCallbackapiTest();
-$wechatObj->valid();
+$wechatObj = new wechatCallbackapiTest();   // 实例化对象
+$wechatObj->valid();    // 调用验证方法（此方法内调用回复方法）
 
 class wechatCallbackapiTest
 {
@@ -17,6 +19,7 @@ class wechatCallbackapiTest
         //valid signature , option
         if($this->checkSignature()){
             echo $echoStr;
+            $this->responseMsg();
             exit;
         }
     }
@@ -46,10 +49,18 @@ class wechatCallbackapiTest
 							</xml>";
             if(!empty( $keyword ))
             {
-                $msgType = "text";
-                $contentStr = "Welcome to wechat world!";
-                $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-                echo $resultStr;
+                if($keyword == "hello"){
+                    $msgType = "text";
+                    $contentStr = "你好";
+                    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
+                    echo $resultStr;
+                }
+                else{
+                    $msgType = "text";
+                    $contentStr = "Welcome to wechat world!";
+                    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
+                    echo $resultStr;
+                }
             }else{
                 echo "Input something...";
             }
