@@ -55,6 +55,7 @@
                 if(e.changedTouches){
                     e = e.changedTouches[e.changedTouches.length - 1];
                 }
+                // 鼠标（手指）的坐标
                 var offsetX = e.pageX - $(this).offset().left;
                 var offsetY = e.pageY - $(this).offset().top;
                 // 手指触摸的地方画一个圆（透明）
