@@ -12,6 +12,10 @@ $wechatObj->valid();    // 调用验证方法（此方法内调用回复方法�
 
 class wechatCallbackapiTest
 {
+    function __construct() {
+        require("../tools/access_token.php");
+    }
+
     public function valid()
     {
         $echoStr = $_GET["echostr"];
@@ -49,7 +53,16 @@ class wechatCallbackapiTest
                     $resultStr = $this->receiveEvent($postObj);
                     break;
                 case 'location':
-                    $contentstr = "你的位置为：{$postObj->Label}。";
+                    // 获取access_token
+                    $accessTokenObj = new accessToken();
+                    $accessToken = $accessTokenObj->get();
+                    // 获取用户基本信息 https://mp.weixin.qq.com/wiki/14/bb5031008f1494a59c6f71fa0f319c66.html
+                    $openid = $postObj->FromUserName;
+                    $data = file_get_contents("https://api.weixin.qq.com/cgi-bin/user/info?access_token={$accessToken}&openid={$openid}&lang=zh_CN");
+                    $userData = json_decode($data, true);
+                    // 获取昵称，还可以获取其它信息，详见文档。此功能可用于微信墙
+                    $nickname = $userData['nickname'];
+                    $contentstr = "{$nickname}，你好，你的位置为：{$postObj->Label}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
                     break;
                 default :
@@ -243,6 +256,11 @@ class wechatCallbackapiTest
         }else{
             return false;
         }
+    }
+
+    // 析构函数
+    function __destruct() {
+        unset($postObj);
     }
 }
 // end of more.php
