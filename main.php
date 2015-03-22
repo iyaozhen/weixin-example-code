@@ -115,7 +115,7 @@ class wechatCallbackapiTest
                  * */
                 $locationX = $postObj->Latitude;
                 $locationY = $postObj->Longitude;
-                $url = urlencode("http://api.map.baidu.com/place/search?query=海底捞&location={$locationX},{$locationY}&radius=1000&region=北京&output=html&src=yourCompanyName|wechat");
+                $url = "http://api.map.baidu.com/place/search?query=".urlencode("海底捞")."&location={$locationX},{$locationY}&radius=1000&region=".urlencode("北京")."&output=html&src=yourCompanyName|wechat";
                 $contentstr = "周边美食：{$url}";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
