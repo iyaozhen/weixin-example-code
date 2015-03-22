@@ -186,7 +186,7 @@ class wechatCallbackapiTest
             }
             elseif($keyword == "日历"){
                 // 上传日历图片获取 media id 然后回复给用户
-                $mediaId = $this->uploadImg("calendar.png");
+                $mediaId = $this->uploadImg("../calendar.png");
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
             }
             else{
@@ -288,14 +288,13 @@ class wechatCallbackapiTest
         $accessToken = $accessTokenObj->get();
         $url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token={$accessToken}&type=image";
         // 注意：此处需要使用绝对路径（将需要上传的图片放在固定文件夹下，方便处理）
-        // DIRECTORY_SEPARATOR php 预置常量，文件分隔符
-        $media = "@".dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR.$file;
+        $data['media'] = "@".realpath($file);
         // CURL 上传文件
         $ch = curl_init();
-        $data = array('media' => $media);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);	// 返回原生输出
         curl_setopt($ch, CURLOPT_HEADER, 0);	// 不显示header头
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);    // 不检查SSL证书
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
