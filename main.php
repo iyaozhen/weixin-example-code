@@ -228,7 +228,7 @@ class wechatCallbackapiTest
                 $html->load($htmlDom); // 载入字符串
                 $qiushi = $html->find('.qiushi');
                 // 只取3条
-                for($i = 0, $contentStr = '糗事百科：'; $i < 3; $i++){
+                for($i = 0, $contentStr = "---糗事百科---"; $i < 3; $i++){
                     $content = $qiushi[$i];
                     $userDom = $content->find('.user', 0);
                     if($userDom === null){
