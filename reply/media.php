@@ -288,7 +288,8 @@ class wechatCallbackapiTest
         $accessToken = $accessTokenObj->get();
         $url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token={$accessToken}&type=image";
         // 注意：此处需要使用绝对路径（将需要上传的图片放在固定文件夹下，方便处理）
-        $media = "@".dirname(dirname(__FILE__)).$file;
+        // DIRECTORY_SEPARATOR php 预置常量，文件分隔符
+        $media = "@".dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR.$file;
         // CURL 上传文件
         $ch = curl_init();
         $data = array('media' => $media);

@@ -47,6 +47,7 @@ class accessToken
             "expires_time" => $expiresTime
         );
         // 因为Token有时间限制，且获取的次数有限，所以需要存起来
+        // 此处需要注意文件是否有权限
         file_put_contents("../access_token.txt", json_encode($saveToken));
 
         // 并返回获取到的token
