@@ -14,6 +14,7 @@ class wechatCallbackapiTest
 {
     function __construct() {
         require("tools/access_token.php");
+        require("tools/iBotCloud.php");
     }
 
     public function valid()
@@ -204,7 +205,7 @@ class wechatCallbackapiTest
 
                     $weather7d = '☞<a href="http://mobile.weather.com.cn/city/101010100.html?data=7d">未来七天天气预报</a>';
 
-                    $contentStr = sprintf("实时天气: %s，%s，%s，湿度: %s，空气质量: %s\n感冒指数: %s\n紫外线指数: %s\n%s", $RTinfo, $RTtemperature, $RTwind, $RThumidity, $pm25, $ganmao, $ziwaixian, $weather7d);
+                    $contentStr = sprintf("北京实时天气: %s，%s，%s，湿度: %s，空气质量: %s\n感冒指数: %s\n紫外线指数: %s\n%s", $RTinfo, $RTtemperature, $RTwind, $RThumidity, $pm25, $ganmao, $ziwaixian, $weather7d);
                 }
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
@@ -214,7 +215,14 @@ class wechatCallbackapiTest
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
             }
             else{
-                $contentStr = "无匹配关键词";
+                $iBot = new iBotCloud();
+                $answerStr = $iBot->get_answer($keyword, $postObj->FromUserName);
+                if(preg_match("/auth result/", $answerStr)){
+                    $contentStr = "机器人歇菜了。";
+                }
+                else{
+                    $contentStr = $answerStr;
+                }
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
         }else{
