@@ -15,6 +15,7 @@ class wechatCallbackapiTest
     function __construct() {
         require("tools/access_token.php");
         require("tools/iBotCloud.php");
+        require("tools/simple_html_dom.php");
     }
 
     public function valid()
@@ -214,6 +215,37 @@ class wechatCallbackapiTest
                 $mediaId = $this->uploadImg("../calendar.png");
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
             }
+            elseif($keyword == "笑话"){
+                // 抓取糗事百科纯文字分类前3个
+                $url = "http://wap2.qiushibaike.com/text";
+                $htmlDom = file_get_contents($url);
+                /*
+                 * 这里使用的是经典的 PHP Simple HTML DOM Parser库
+                 * 推荐使用性能更好的 html-parser：https://github.com/bupt1987/html-parser
+                 * 但要求的php版本较高，且需要特定的库支持
+                */
+                $html = new simple_html_dom();
+                $html->load($htmlDom); // 载入字符串
+                $qiushi = $html->find('.qiushi');
+                // 只取3条
+                for($i = 0, $contentStr = '糗事百科：'; $i < 3; $i++){
+                    $content = $qiushi[$i];
+                    $userDom = $content->find('.user', 0);
+                    if($userDom === null){
+                        $user = '匿名用户';
+                    }
+                    else{
+                        $user = trim($userDom->plaintext);
+                    }
+                    $jokeDom = $content->innertext;
+                    // 去除其它信息
+                    $patterns = array("/<br\/>/", "/<p[\s\S]*?<\/p>/");
+                    $joke = trim(preg_replace($patterns, '', $jokeDom));
+                    $contentStr .= "\n{$user}: {$joke}";
+                }
+
+                $resultStr = $this->ReplyText($postObj, $contentStr);
+            }
             elseif(strpos($keyword, "翻译") !== false){
                 $word = $this->get_content($keyword, "翻译"); // 获得需要翻译的文本
                 if (strlen($word)) {
@@ -224,12 +256,12 @@ class wechatCallbackapiTest
                     $transResultJson = file_get_contents($baidufanyiapiUrl);    // 获得json数据
                     $transResultArray = json_decode($transResultJson, true);    // 转换为数组
                     $transWord = $transResultArray['trans_result'][0]['dst'];   // 翻译后的内容
-                    $contentstr = "翻译结果: ".$transWord;
+                    $contentStr = "翻译结果: ".$transWord;
                 }
                 else{
-                    $contentstr = "输入括号里的关键字【翻译+内容】即可智能翻译。如【翻译apple】、【翻译今天天气真好】。\n当需要翻译的语言为非中文时，会被翻译成中文。为中文时，会被翻译为英文。";
+                    $contentStr = "输入括号里的关键字【翻译+内容】即可智能翻译。如【翻译apple】、【翻译今天天气真好】。\n当需要翻译的语言为非中文时，会被翻译成中文。为中文时，会被翻译为英文。";
                 }
-                $resultStr = $this->ReplyText($postObj, $contentstr);
+                $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             elseif(strpos($keyword, "快递") !== false){
                 $kuaidiNum = $this->get_content($keyword, "快递"); // 获得快递单号
