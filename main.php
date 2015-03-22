@@ -65,7 +65,8 @@ class wechatCallbackapiTest
                     // 百度地图 web端URI API http://developer.baidu.com/map/index.php?title=uri/api/web
                     $locationX = $postObj->Latitude;
                     $locationY = $postObj->Longitude;
-                    $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&coord_type=wgs84&radius=1000&output=html&src=yourCompanyName|wechat";
+                    $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&coord_type=wgs84&radius=1000&region=".urlencode("北京")."&output=html&src=yourCompanyName|wechat";
+                    // 这里可回复图文消息，更好的展示效果
                     $contentstr = "{$nickname}，你好，已为你找到周边美食：{$url}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
                     break;
