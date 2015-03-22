@@ -113,7 +113,7 @@ class wechatCallbackapiTest
                  * 此功能除了需要有权限外，还需要手动在后台开启
                  * 根据经纬度获取地理位置的接口：http://developer.baidu.com/map/index.php?title=webapi/guide/webservice-geocoding
                  * */
-                $contentstr = "地利位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
+                $contentstr = "地理位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
             case 'SCAN':
@@ -183,6 +183,11 @@ class wechatCallbackapiTest
             elseif($keyword == "语音"){
                 $contentStr = "语音识别正确";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
+            }
+            elseif($keyword == "日历"){
+                // 上传日历图片获取 media id 然后回复给用户
+                $mediaId = $this->uploadImg("calendar.png");
+                $resultStr = $this->ReplyImage($postObj, $mediaId);
             }
             else{
                 $contentStr = "无匹配关键词";
@@ -274,6 +279,30 @@ class wechatCallbackapiTest
                     </xml>";
         $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time(), $mediaId);
         return $resultStr;
+    }
+
+    private function uploadImg($file)
+    {
+        // 获取access_token
+        $accessTokenObj = new accessToken();
+        $accessToken = $accessTokenObj->get();
+        $url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token={$accessToken}&type=image";
+        // 注意：此处需要使用绝对路径（将需要上传的图片放在固定文件夹下，方便处理）
+        $media = "@".dirname(dirname(__FILE__)).$file;
+        // CURL 上传文件
+        $ch = curl_init();
+        $data = array('media' => $media);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);	// return the raw output
+        curl_setopt($ch, CURLOPT_HEADER, 0);	// 不显示header头
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        // 返回media_id
+        // 上传完成后应该把图片存储进数据库，以便下次使用
+        $resArray = json_decode($result, true);
+        return @$resArray['media_id'];
     }
 
     private function checkSignature()

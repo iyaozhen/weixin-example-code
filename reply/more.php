@@ -108,7 +108,7 @@ class wechatCallbackapiTest
                  * 此功能除了需要有权限外，还需要手动在后台开启
                  * 根据经纬度获取地理位置的接口：http://developer.baidu.com/map/index.php?title=webapi/guide/webservice-geocoding
                  * */
-                $contentstr = "地利位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
+                $contentstr = "地理位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
             case 'SCAN':
