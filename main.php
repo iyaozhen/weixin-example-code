@@ -215,21 +215,56 @@ class wechatCallbackapiTest
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
             }
             elseif(strpos($keyword, "翻译") !== false){
-                $word = $this->get_content($keyword, "翻译");	// 获得需要翻译的文本
+                $word = $this->get_content($keyword, "翻译"); // 获得需要翻译的文本
                 if (strlen($word)) {
-                    $word = urlencode($word); 	// url编码
+                    $word = urlencode($word);   // url编码
                     // http://developer.baidu.com/wiki/index.php?title=帮助文档首页/百度翻译/翻译API
                     // client_id: 开发者在百度开发者中心注册得到的授权API key（免费）
                     $baidufanyiapiUrl = "http://openapi.baidu.com/public/2.0/bmt/translate?client_id=7goN3CD3OSoXT5tDShhIZU7a&q=".$word."&from=auto&to=auto";
-                    $transResultJson = file_get_contents($baidufanyiapiUrl);	// 获得json数据
-                    $transResultArray = json_decode($transResultJson, true);	// 转换为数组
-                    $transWord = $transResultArray['trans_result'][0]['dst'];		// 翻译后的内容
+                    $transResultJson = file_get_contents($baidufanyiapiUrl);    // 获得json数据
+                    $transResultArray = json_decode($transResultJson, true);    // 转换为数组
+                    $transWord = $transResultArray['trans_result'][0]['dst'];   // 翻译后的内容
                     $contentstr = "翻译结果: ".$transWord;
                 }
                 else{
                     $contentstr = "输入括号里的关键字【翻译+内容】即可智能翻译。如【翻译apple】、【翻译今天天气真好】。\n当需要翻译的语言为非中文时，会被翻译成中文。为中文时，会被翻译为英文。";
                 }
                 $resultStr = $this->ReplyText($postObj, $contentstr);
+            }
+            elseif(strpos($keyword, "快递") !== false){
+                $kuaidiNum = $this->get_content($keyword, "快递"); // 获得快递单号
+                if (strlen($kuaidiNum)) {
+                    // 自动识别单号的api，为了更加稳定的使用建议去申请kuaidi100的api：http://www.kuaidi100.com/openapi/（免费）
+                    $url = "http://m.ickd.cn/query.php?com=auto&no={$kuaidiNum}";
+                    $infoJson = file_get_contents($url);
+                    $infoArray = json_decode($infoJson, true);
+                    $errCode = $infoArray['errCode'];
+                    if($errCode == 0){
+                        $status = $infoArray['status']; // 单号状态
+                        $statusArray = array("在途，即货物处于运输过程中", "揽件，货物已由快递公司揽收并且产生了第一条跟踪信息", "疑难，货物寄送过程出了问题", "签收，收件人已签收", "退签，即货物由于用户拒签、超区等原因退回，而且发件人已经签收", "派件，即快递正在进行同城派件", "退回，货物正处于退回发件人的途中");
+                        $statusStr = $statusArray[$status];	// 运单状态
+                        $com = $infoArray['expTextName'];	// 公司
+                        $mailNo = $infoArray['mailNo'];	// 单号
+                        $data = $infoArray['data'];
+                        $dataStr = '';
+                        foreach ($data as $value) {
+                            $dataStr .= $value['time']."\n";
+                            $dataStr .= $value['context'];
+                        }
+                        unset($value);
+                        $contentStr = sprintf("%s-%s\n状态: %s\n-----物流信息-----\n%s", $com, $mailNo, $statusStr, $dataStr);
+                    }
+                    elseif($errCode == 404){
+                        $contentStr = "无法识别快递单号";
+                    }
+                    else{
+                        $contentStr = "查询出错";
+                    }
+                }
+                else{
+                    $contentStr = "输入括号里的关键字【快递+单号】即可查询物流信息，如【快递966650707261】，不用指明具体快递公司哦。";
+                }
+                $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             else{
                 // 没有匹配到关键词调用机器人回答
