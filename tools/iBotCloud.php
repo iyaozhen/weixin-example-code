@@ -9,9 +9,9 @@
 
 class iBotCloud
 {
-    // 注册后获得，可试用，到期后需要购买
-	private	$app_key="JTTAQHnkbnC9";	// Key
-	private	$app_secret="vIRfcGoJcrsxFnNDTeyZ";		// Secret
+    // 这里的key是临时的。请自行注册后获得，可试用，到期后需要购买
+	private	$app_key="1i0WYqi9LCOv";	// Key
+	private	$app_secret="JZEdu3AHsmjUADvpaEjB";		// Secret
 
 	/*
 	* 获取许可
