@@ -214,14 +214,32 @@ class wechatCallbackapiTest
                 $mediaId = $this->uploadImg("../calendar.png");
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
             }
+            elseif(strpos($keyword, "翻译") !== false){
+                $word = $this->get_content($keyword, "翻译");	// 获得需要翻译的文本
+                if (strlen($word)) {
+                    $word = urlencode($word); 	// url编码
+                    // http://developer.baidu.com/wiki/index.php?title=帮助文档首页/百度翻译/翻译API
+                    // client_id: 开发者在百度开发者中心注册得到的授权API key（免费）
+                    $baidufanyiapiUrl = "http://openapi.baidu.com/public/2.0/bmt/translate?client_id=7goN3CD3OSoXT5tDShhIZU7a&q=".$word."&from=auto&to=auto";
+                    $transResultJson = file_get_contents($baidufanyiapiUrl);	// 获得json数据
+                    $transResultArray = json_decode($transResultJson, true);	// 转换为数组
+                    $transWord = $transResultArray['trans_result'][0]['dst'];		// 翻译后的内容
+                    $contentstr = "翻译结果: ".$transWord;
+                }
+                else{
+                    $contentstr = "输入括号里的关键字【翻译+内容】即可智能翻译。如【翻译apple】、【翻译今天天气真好】。\n当需要翻译的语言为非中文时，会被翻译成中文。为中文时，会被翻译为英文。";
+                }
+                $resultStr = $this->ReplyText($postObj, $contentstr);
+            }
             else{
+                // 没有匹配到关键词调用机器人回答
                 $iBot = new iBotCloud();
                 $answerStr = $iBot->get_answer($keyword, $postObj->FromUserName);
                 if(preg_match("/auth result/", $answerStr)){
                     $contentStr = "机器人歇菜了。";
                 }
                 else{
-                    $contentStr = $answerStr;
+                    $contentStr = trim($answerStr);
                 }
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
@@ -362,6 +380,19 @@ class wechatCallbackapiTest
 
         $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time());
         return $resultStr;
+    }
+
+    private function get_content($str, $keyword)	// 匹配字符串中关键词后面的内容
+    {
+        $pregStr = "/(?<=".$keyword.").*/u";	// 正则表达式语法，向后查找
+        preg_match($pregStr, $str, $matches);	// 使用向后查找可以匹配例如“图书图书”的情况
+        $content = trim($matches[0]);	// 去除前后空格
+        // http://www.php.net/manual/zh/function.strpos.php
+        if (strpos($content, '+') !== FALSE) {	// 如果获得的字符串前面有+号则去除
+            $content = preg_replace("/\+/", '', $content, 1);	// 去除加号，且只去除一次，解决用户多输入+号的情况
+            $content = trim($content);
+        }
+        return $content;
     }
 
     private function checkSignature()
