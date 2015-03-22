@@ -182,12 +182,30 @@ class wechatCallbackapiTest
                 );
                 $resultStr = $this->ReplyNews($postObj, $news);
             }
-            elseif($keyword == "text"){
-                $contentStr = "回复文本消息";
-                $resultStr = $this->ReplyText($postObj, $contentStr);
-            }
-            elseif($keyword == "语音"){
-                $contentStr = "语音识别正确";
+            elseif($keyword == "天气"){
+                $apiUrl = "http://tq.360.cn/api/weatherquery/query?app=tq360&code=101010100&_jsonp=renderData&_=".time(); // 360天气接口 http://tq.360.cn
+                // 其它天气接口：http://developer.baidu.com/map/carapi-7.htm  http://blog.csdn.net/zgyulongfei/article/details/7956118
+                $weatherText = file_get_contents($apiUrl);
+                if (strlen($weatherText) < 10) {
+                    $contentStr = "出现错误，你可以稍后再试或把问题反馈给我们。";
+                }
+                else{
+                    preg_match("/.*?(\{.+\}).*/", $weatherText, $matches);	// jsonp to json
+                    $weatherJson = $matches[1];	// json数据
+                    $weatherArray = json_decode($weatherJson, true);	// 转为数组
+
+                    $RTtemperature = $weatherArray['realtime']['weather']['temperature']."℃";	// 实时温度
+                    $RThumidity = $weatherArray['realtime']['weather']['humidity']."%";	// 实时湿度
+                    $RTinfo = $weatherArray['realtime']['weather']['info'];	// 实时天气
+                    $RTwind = $weatherArray['realtime']['wind']['direct'].$weatherArray['realtime']['wind']['power'];	// 实时风向
+                    $pm25 = $weatherArray['pm25']['quality']." ".$weatherArray['pm25']['aqi'];	// 空气质量
+                    $ganmao = $weatherArray['life']['info']['ganmao']['0']."，".$weatherArray['life']['info']['ganmao']['1'];	// 感冒指数
+                    $ziwaixian = $weatherArray['life']['info']['ziwaixian']['0']."，".$weatherArray['life']['info']['ziwaixian']['1'];	// 紫外线指数
+
+                    $weather7d = '☞<a href="http://mobile.weather.com.cn/city/101010100.html?data=7d">未来七天天气预报</a>';
+
+                    $contentStr = sprintf("实时天气: %s，%s，%s，湿度: %s，空气质量: %s\n感冒指数: %s\n紫外线指数: %s\n%s", $RTinfo, $RTtemperature, $RTwind, $RThumidity, $pm25, $ganmao, $ziwaixian, $weather7d);
+                }
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             elseif($keyword == "日历"){
