@@ -63,10 +63,11 @@ class wechatCallbackapiTest
                     // 获取昵称，还可以获取其它信息，详见官方文档。此功能可用于实现微信墙
                     $nickname = $userData['nickname'];
                     // 百度地图 web端URI API http://developer.baidu.com/map/index.php?title=uri/api/web
-                    $locationX = $postObj->Latitude;
-                    $locationY = $postObj->Longitude;
-                    $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&coord_type=wgs84&radius=1000&region=".urlencode("北京")."&output=html&src=yourCompanyName|wechat";
-                    // 这里可回复图文消息，更好的展示效果
+                    $locationX = $postObj->Location_X;
+                    $locationY = $postObj->Location_Y;
+                    $label = $postObj->Label;
+                    $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&region=".urlencode($label)."&coord_type=wgs84&radius=1000&output=html&src=yourCompanyName%7cwechat";
+                    // 这里回复图文消息效果更好
                     $contentstr = "{$nickname}，你好，已为你找到周边美食：{$url}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
                     break;
