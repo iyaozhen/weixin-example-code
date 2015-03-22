@@ -62,7 +62,11 @@ class wechatCallbackapiTest
                     $userData = json_decode($data, true);
                     // 获取昵称，还可以获取其它信息，详见官方文档。此功能可用于实现微信墙
                     $nickname = $userData['nickname'];
-                    $contentstr = "{$nickname}，你好，你的位置为：{$postObj->Label}。";
+                    // 百度地图 web端URI API http://developer.baidu.com/map/index.php?title=uri/api/web
+                    $locationX = $postObj->Latitude;
+                    $locationY = $postObj->Longitude;
+                    $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&coord_type=wgs84&radius=1000&output=html&src=yourCompanyName|wechat";
+                    $contentstr = "{$nickname}，你好，已为你找到周边美食：{$url}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
                     break;
                 case 'image':
@@ -109,14 +113,11 @@ class wechatCallbackapiTest
                 break;
             case 'LOCATION':	// 用户上报地利位置
                 /*
+                 * 可用于实现签到功能
                  * 此功能除了需要有权限外，还需要手动在后台开启
                  * 根据经纬度获取地理位置的接口：http://developer.baidu.com/map/index.php?title=webapi/guide/webservice-geocoding
-                 * 百度地图 web端URI API http://developer.baidu.com/map/index.php?title=uri/api/web
                  * */
-                $locationX = $postObj->Latitude;
-                $locationY = $postObj->Longitude;
-                $url = "http://api.map.baidu.com/place/search?query=".urlencode("海底捞")."&location={$locationX},{$locationY}&radius=1000&region=".urlencode("北京")."&output=html&src=yourCompanyName|wechat";
-                $contentstr = "周边美食：{$url}";
+                $contentstr = "地理位置上报成功，你的纬度为：{$postObj->Latitude}，你的经度为：{$postObj->Longitude}。";
                 $resultStr = $this->ReplyText($postObj, $contentstr);
                 break;
             case 'SCAN':
