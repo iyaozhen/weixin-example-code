@@ -293,8 +293,9 @@ class wechatCallbackapiTest
         // CURL 上传文件
         $ch = curl_init();
         $data = array('media' => $media);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);	// return the raw output
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);	// 返回原生输出
         curl_setopt($ch, CURLOPT_HEADER, 0);	// 不显示header头
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);    // 不检查SSL证书
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
