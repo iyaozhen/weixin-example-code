@@ -6,19 +6,10 @@
 require("access_token.php");
 
 // 二维码类型 1: 永久 0: 临时
-if(isset($_GET['type'])){
-    $type = $_GET['type'];
-}
-else{
-    $type = 0;
-}
+$type = isset($_GET['type']) ? $_GET['type'] : 0;
+
 // 场景值ID
-if(isset($_GET['id'])){
-    $sceneId = $_GET['id'];
-}
-else{
-    $sceneId = 1;
-}
+$sceneId = isset($_GET['id']) ? $_GET['id'] : 1;
 
 // https://mp.weixin.qq.com/wiki/18/28fc21e7ed87bec960651f0ce873ef8a.html
 if($type == 0){
@@ -56,3 +47,4 @@ echo '<html>' .
     '<img src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'">' .
     '<p>二维码地址：<a href="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'">https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='.$ticket.'</a></p>' .
     '</html>';
+// end of qrcode.php

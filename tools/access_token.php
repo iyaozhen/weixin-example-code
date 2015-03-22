@@ -53,5 +53,4 @@ class accessToken
         return $accessToken;
     }
 }
-
 // end of access_token.php
