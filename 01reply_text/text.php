@@ -3,8 +3,6 @@
  * wechat 关键词回复文本消息
  */
 
-// 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
-
 // 认证 token
 define("TOKEN", "weixin_test");
 $wechatObj = new wechatCallbackapiTest();   // 实例化对象
@@ -18,7 +16,7 @@ class wechatCallbackapiTest
 
         //valid signature , option
         if($this->checkSignature()){
-            echo $echoStr;
+            echo $echoStr;  // 后台服务器配置验证通过后可注释掉这里，没注释也无影响
             $this->responseMsg();
             exit;
         }
@@ -50,18 +48,10 @@ class wechatCallbackapiTest
 							</xml>";
             if(!empty( $keyword ))
             {
-                if($keyword == "hello"){
-                    $msgType = "text";
-                    $contentStr = "你好";
-                    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-                    echo $resultStr;
-                }
-                else{
-                    $msgType = "text";
-                    $contentStr = "Welcome to wechat world!";
-                    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-                    echo $resultStr;
-                }
+                $msgType = "text";  // 消息类型
+                $contentStr = $keyword; // 将用户的消息原样返回
+                $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
+                echo $resultStr;
             }else{
                 echo "Input something...";
             }

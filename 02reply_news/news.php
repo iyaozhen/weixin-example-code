@@ -3,8 +3,6 @@
  * wechat 关键词回复图文消息
  */
 
-// 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
-
 // 认证 token
 define("TOKEN", "weixin_test");
 $wechatObj = new wechatCallbackapiTest();   // 实例化对象
