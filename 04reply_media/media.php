@@ -1,9 +1,7 @@
 <?php
 /**
- * wechat 多客服
+ * wechat 处理和回复多媒体消息（以图片为例，其它类似）
  */
-
-// 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
 
 // 认证 token
 define("TOKEN", "weixin_test");
@@ -301,35 +299,9 @@ class wechatCallbackapiTest
         $result = curl_exec($ch);
         curl_close($ch);
         // 返回media_id
-        // 上传完成后应该把图片存储进数据库，以便下次使用
+        // 上传完成后可以把 media_id 存储进数据库，以便下次使用
         $resArray = json_decode($result, true);
         return @$resArray['media_id'];
-    }
-    /*
-     * 如果公众号处于开发模式，普通微信用户向公众号发消息时
-     * 微信服务器会先将消息POST到开发者填写的url上
-     * 如果希望将消息转发到多客服系统，则需要开发者在响应包中返回MsgType为transfer_customer_service的消息
-     * 微信服务器收到响应后会把当次发送的消息转发至多客服系统
-     * */
-    private function transfer_customer_service($object, $KfAccount = null)
-    {
-        // 默认不指定客服
-        $textTpl = "<xml>
-                    <ToUserName><![CDATA[%s]]></ToUserName>
-                    <FromUserName><![CDATA[%s]]></FromUserName>
-                    <CreateTime>%s</CreateTime>";
-        if($KfAccount !== null){
-            $textTpl .= "<TransInfo>
-                           <KfAccount><![CDATA[{$KfAccount}]]></KfAccount>
-                        </TransInfo>";
-        }
-        else{
-            $textTpl .= "<MsgType><![CDATA[transfer_customer_service]]></MsgType>
-                        </xml>";
-        }
-
-        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time());
-        return $resultStr;
     }
 
     private function checkSignature()

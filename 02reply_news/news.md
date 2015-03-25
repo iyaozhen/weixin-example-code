@@ -1,6 +1,7 @@
 此章节介绍如何回复图文消息。
 
 在上一节的代码的基础上我们把回复文本消息封装成一个方法，方便以后调用。
+和回复文本消息一样，我们只要构造符合微信标准的xml串即可。
 由于只有单图文支持 Description（图文消息描述），为了调用简单，把回复图文消息分为两类，单图文和多图文。
 ReplyOneNews 接受一个数组参数包括 Title、Description、PicUrl、Url
 ReplyNews 接受一个二维数组参数包括 Title、PicUrl、Url

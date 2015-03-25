@@ -1,9 +1,7 @@
 <?php
 /**
- * wechat 关键词回复语言消息，获取用户基本信息，接收地理位置等
+ * wechat 多客服
  */
-
-// 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
 
 // 认证 token
 define("TOKEN", "weixin_test");
@@ -64,6 +62,11 @@ class wechatCallbackapiTest
                     $nickname = $userData['nickname'];
                     $contentstr = "{$nickname}，你好，你的位置为：{$postObj->Label}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
+                    break;
+                case 'image':
+                    // 用户发送过来的图片再发送回去
+                    $mediaId = $postObj->MediaId;
+                    $resultStr = $this->ReplyImage($postObj, $mediaId);
                     break;
                 default :
                     $contentstr = "你的".$RX_TYPE."信息已经收到";
@@ -179,6 +182,15 @@ class wechatCallbackapiTest
                 $contentStr = "语音识别正确";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
+            elseif($keyword == "日历"){
+                // 上传日历图片获取 media id 然后回复给用户
+                $mediaId = $this->uploadImg("../calendar.png");
+                $resultStr = $this->ReplyImage($postObj, $mediaId);
+            }
+            elseif($keyword == "客服"){
+                // 转移到客服处理
+                $resultStr = $this->transfer_customer_service($postObj);
+            }
             else{
                 $contentStr = "无匹配关键词";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
@@ -255,6 +267,73 @@ class wechatCallbackapiTest
         return $resultStr;
     }
 
+    // 回复图片消息
+    private function ReplyImage($object, $mediaId)
+    {
+        $textTpl = "<xml>
+                    <ToUserName><![CDATA[%s]]></ToUserName>
+                    <FromUserName><![CDATA[%s]]></FromUserName>
+                    <CreateTime>%s</CreateTime>
+                    <MsgType><![CDATA[image]]></MsgType>
+                    <Image>
+                    <MediaId><![CDATA[%s]]></MediaId>
+                    </Image>
+                    </xml>";
+        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time(), $mediaId);
+        return $resultStr;
+    }
+
+    private function uploadImg($file)
+    {
+        // 获取access_token
+        $accessTokenObj = new accessToken();
+        $accessToken = $accessTokenObj->get();
+        $url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token={$accessToken}&type=image";
+        // 注意：此处需要使用绝对路径（将需要上传的图片放在固定文件夹下，方便处理）
+        $data['media'] = "@".realpath($file);
+        // CURL 上传文件
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);	// 返回原生输出
+        curl_setopt($ch, CURLOPT_HEADER, 0);	// 不显示header头
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);    // 不检查SSL证书
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        // 返回media_id
+        // 上传完成后应该把图片存储进数据库，以便下次使用
+        $resArray = json_decode($result, true);
+        return @$resArray['media_id'];
+    }
+    /*
+     * 如果公众号处于开发模式，普通微信用户向公众号发消息时
+     * 微信服务器会先将消息POST到开发者填写的url上
+     * 如果希望将消息转发到多客服系统，则需要开发者在响应包中返回MsgType为transfer_customer_service的消息
+     * 微信服务器收到响应后会把当次发送的消息转发至多客服系统
+     * */
+    private function transfer_customer_service($object, $KfAccount = null)
+    {
+        // 默认不指定客服
+        $textTpl = "<xml>
+                    <ToUserName><![CDATA[%s]]></ToUserName>
+                    <FromUserName><![CDATA[%s]]></FromUserName>
+                    <CreateTime>%s</CreateTime>";
+        if($KfAccount !== null){
+            $textTpl .= "<TransInfo>
+                           <KfAccount><![CDATA[{$KfAccount}]]></KfAccount>
+                        </TransInfo>";
+        }
+        else{
+            $textTpl .= "<MsgType><![CDATA[transfer_customer_service]]></MsgType>
+                        </xml>";
+        }
+
+        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time());
+        return $resultStr;
+    }
+
     private function checkSignature()
     {
         // you must define TOKEN by yourself
@@ -285,4 +364,4 @@ class wechatCallbackapiTest
         unset($postObj);
     }
 }
-// end of more.php
+// end of media.php

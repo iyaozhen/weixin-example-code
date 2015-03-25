@@ -5,7 +5,7 @@
 
 class accessToken
 {
-    // 公众平台后台获取
+    // AppID和AppSecret可在微信公众平台官网-开发者中心页中获得（需要已经成为开发者，且帐号没有异常状态）
     private $appid = "wx28c82cbb31934ef0";
     private $appsecret = "1bb990600b25bc3cda1a199cc0e140af";
 
@@ -41,13 +41,12 @@ class accessToken
         $accessTokenArray = json_decode($accessTokenJson, true);
         $accessToken = $accessTokenArray['access_token'];   // access_token
         $expiresTime = time() + $accessTokenArray['expires_in'];    // 过期时间 = 当前时间 + 7200s
-        // 把获取的token存起来
         $saveToken = array(
             "access_token" => $accessToken,
             "expires_time" => $expiresTime
         );
         // 因为Token有时间限制，且获取的次数有限，所以需要存起来
-        // 此处需要注意文件是否有权限
+        // 此处需要注意文件是否有写权限
         file_put_contents("../access_token.txt", json_encode($saveToken));
 
         // 并返回获取到的token

@@ -1,9 +1,7 @@
 <?php
 /**
- * wechat 处理和回复多媒体消息（以图片为例，其它类似）
+ * wechat 接收事件回复
  */
-
-// 官方PHP示例代码：http://mp.weixin.qq.com/mpres/htmledition/res/wx_sample.20140819.zip
 
 // 认证 token
 define("TOKEN", "weixin_test");
@@ -64,11 +62,6 @@ class wechatCallbackapiTest
                     $nickname = $userData['nickname'];
                     $contentstr = "{$nickname}，你好，你的位置为：{$postObj->Label}。";
                     $resultStr = $this->ReplyText($postObj, $contentstr);
-                    break;
-                case 'image':
-                    // 用户发送过来的图片再发送回去
-                    $mediaId = $postObj->MediaId;
-                    $resultStr = $this->ReplyImage($postObj, $mediaId);
                     break;
                 default :
                     $contentstr = "你的".$RX_TYPE."信息已经收到";
@@ -184,11 +177,6 @@ class wechatCallbackapiTest
                 $contentStr = "语音识别正确";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
-            elseif($keyword == "日历"){
-                // 上传日历图片获取 media id 然后回复给用户
-                $mediaId = $this->uploadImg("../calendar.png");
-                $resultStr = $this->ReplyImage($postObj, $mediaId);
-            }
             else{
                 $contentStr = "无匹配关键词";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
@@ -265,47 +253,6 @@ class wechatCallbackapiTest
         return $resultStr;
     }
 
-    // 回复图片消息
-    private function ReplyImage($object, $mediaId)
-    {
-        $textTpl = "<xml>
-                    <ToUserName><![CDATA[%s]]></ToUserName>
-                    <FromUserName><![CDATA[%s]]></FromUserName>
-                    <CreateTime>%s</CreateTime>
-                    <MsgType><![CDATA[image]]></MsgType>
-                    <Image>
-                    <MediaId><![CDATA[%s]]></MediaId>
-                    </Image>
-                    </xml>";
-        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time(), $mediaId);
-        return $resultStr;
-    }
-
-    private function uploadImg($file)
-    {
-        // 获取access_token
-        $accessTokenObj = new accessToken();
-        $accessToken = $accessTokenObj->get();
-        $url = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token={$accessToken}&type=image";
-        // 注意：此处需要使用绝对路径（将需要上传的图片放在固定文件夹下，方便处理）
-        $data['media'] = "@".realpath($file);
-        // CURL 上传文件
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);	// 返回原生输出
-        curl_setopt($ch, CURLOPT_HEADER, 0);	// 不显示header头
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);    // 不检查SSL证书
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        $result = curl_exec($ch);
-        curl_close($ch);
-        // 返回media_id
-        // 上传完成后应该把图片存储进数据库，以便下次使用
-        $resArray = json_decode($result, true);
-        return @$resArray['media_id'];
-    }
-
     private function checkSignature()
     {
         // you must define TOKEN by yourself
@@ -336,4 +283,4 @@ class wechatCallbackapiTest
         unset($postObj);
     }
 }
-// end of media.php
+// end of event.php

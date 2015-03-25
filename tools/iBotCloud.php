@@ -47,7 +47,7 @@ class iBotCloud
     public function get_answer($question, $userId)
     {
         $xAuth = $this->get_xAuth();
-        // http头部信息，X-Auth为必须项，用作验证
+        // 按照官方要求构造http头部信息，X-Auth为必须项，用作验证
         $header = array (  
         "POST /robot/ask.do HTTP/1.1",  
         "Cache-Control: no-cache",
