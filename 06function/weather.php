@@ -1,7 +1,6 @@
 <?php
 /**
- * wechat 综合示例
- * 主要功能：天气、日历、笑话、翻译、快递、智能机器人、刮刮乐抽奖、多客服等
+ * wechat 天气、快递、翻译功能
  */
 
 // 认证 token
@@ -12,9 +11,7 @@ $wechatObj->valid();    // 调用验证方法（此方法内调用回复方法�
 class wechatCallbackapiTest
 {
     function __construct() {
-        require("tools/access_token.php");
-        require("tools/iBotCloud.php");
-        require("tools/simple_html_dom.php");
+
     }
 
     public function valid()
@@ -52,25 +49,6 @@ class wechatCallbackapiTest
                     break;
                 case 'event':
                     $resultStr = $this->receiveEvent($postObj);
-                    break;
-                case 'location':
-                    // 获取access_token
-                    $accessTokenObj = new accessToken();
-                    $accessToken = $accessTokenObj->get();
-                    // 获取用户基本信息 https://mp.weixin.qq.com/wiki/14/bb5031008f1494a59c6f71fa0f319c66.html
-                    $openid = $postObj->FromUserName;
-                    $data = file_get_contents("https://api.weixin.qq.com/cgi-bin/user/info?access_token={$accessToken}&openid={$openid}&lang=zh_CN");
-                    $userData = json_decode($data, true);
-                    // 获取昵称，还可以获取其它信息，详见官方文档。此功能可用于实现微信墙
-                    $nickname = $userData['nickname'];
-                    // 百度地图 web端URI API http://developer.baidu.com/map/index.php?title=uri/api/web
-                    $locationX = $postObj->Location_X;
-                    $locationY = $postObj->Location_Y;
-                    $label = $postObj->Label;
-                    $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&region=".urlencode($label)."&coord_type=wgs84&radius=1000&output=html&src=yourCompanyName%7cwechat";
-                    // 这里回复图文消息效果更好
-                    $contentstr = "{$nickname}，你好，已为你找到周边美食：{$url}。";
-                    $resultStr = $this->ReplyText($postObj, $contentstr);
                     break;
                 case 'image':
                     // 用户发送过来的图片再发送回去
@@ -155,18 +133,7 @@ class wechatCallbackapiTest
 
         if(!empty( $keyword ))
         {
-            if($keyword == "抽奖"){
-                $opnid = $postObj->FromUserName;
-                $news = array('title' => "刮刮乐抽奖",
-                    'description' => "每日一刮",
-                    'picurl' => "http://ww1.sinaimg.cn/large/98d2e36bjw1eqjjuipnxrj20a00630sy.jpg",
-                    // 传入用户 FromUserName 判断用户，此值由用户微信号和公众号生成，对公众号来说全局唯一，唯一标识一个用户。
-                    // 刮奖的结果可以存储起来，刮过奖的用户不允许再抽奖
-                    'url' => "http://demo.iyaozhen.com/weixin-example-code/guaguale/guaguale.html?openid={$opnid}",   // 这里换成自己服务器的地址
-                );
-                $resultStr = $this->ReplyOneNews($postObj, $news);
-            }
-            elseif($keyword == "天气"){
+            if($keyword == "天气"){
                 $apiUrl = "http://tq.360.cn/api/weatherquery/query?app=tq360&code=101010100&_jsonp=renderData&_=".time(); // 360天气接口 http://tq.360.cn
                 // 其它天气接口：http://developer.baidu.com/map/carapi-7.htm  http://blog.csdn.net/zgyulongfei/article/details/7956118
                 $weatherText = file_get_contents($apiUrl);
@@ -196,37 +163,6 @@ class wechatCallbackapiTest
                 // 上传日历图片获取 media id 然后回复给用户
                 $mediaId = $this->uploadImg("../calendar.png");
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
-            }
-            elseif($keyword == "笑话"){
-                // 抓取糗事百科纯文字分类前3个
-                $url = "http://wap2.qiushibaike.com/text";
-                $htmlDom = file_get_contents($url);
-                /*
-                 * 这里使用的是经典的 PHP Simple HTML DOM Parser库
-                 * 推荐使用性能更好的 html-parser：https://github.com/bupt1987/html-parser
-                 * 但要求的php版本较高，且需要特定的库支持
-                */
-                $html = new simple_html_dom();
-                $html->load($htmlDom); // 载入字符串
-                $qiushi = $html->find('.qiushi');
-                // 只取3条
-                for($i = 0, $contentStr = "---糗事百科---"; $i < 3; $i++){
-                    $content = $qiushi[$i];
-                    $userDom = $content->find('.user', 0);
-                    if($userDom === null){
-                        $user = '匿名用户';
-                    }
-                    else{
-                        $user = trim($userDom->plaintext);
-                    }
-                    $jokeDom = $content->innertext;
-                    // 去除其它信息
-                    $patterns = array("/<br\/>/", "/<p[\s\S]*?<\/p>/");
-                    $joke = trim(preg_replace($patterns, '', $jokeDom));
-                    $contentStr .= "\n{$user}: {$joke}";
-                }
-
-                $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             elseif(strpos($keyword, "翻译") === 0){
                 $word = $this->get_content($keyword, "翻译"); // 获得需要翻译的文本
@@ -282,14 +218,7 @@ class wechatCallbackapiTest
             }
             else{
                 // 没有匹配到关键词调用机器人回答
-                $iBot = new iBotCloud();
-                $answerStr = $iBot->get_answer($keyword, $postObj->FromUserName);
-                if(preg_match("/auth result/", $answerStr)){
-                    $contentStr = "机器人歇菜了。";
-                }
-                else{
-                    $contentStr = trim($answerStr);
-                }
+                $contentStr = "没有匹配的关键词";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
         }else{
@@ -404,34 +333,9 @@ class wechatCallbackapiTest
         $resArray = json_decode($result, true);
         return @$resArray['media_id'];
     }
-    /*
-     * 如果公众号处于开发模式，普通微信用户向公众号发消息时
-     * 微信服务器会先将消息POST到开发者填写的url上
-     * 如果希望将消息转发到多客服系统，则需要开发者在响应包中返回MsgType为transfer_customer_service的消息
-     * 微信服务器收到响应后会把当次发送的消息转发至多客服系统
-     * */
-    private function transfer_customer_service($object, $KfAccount = null)
-    {
-        // 默认不指定客服
-        $textTpl = "<xml>
-                    <ToUserName><![CDATA[%s]]></ToUserName>
-                    <FromUserName><![CDATA[%s]]></FromUserName>
-                    <CreateTime>%s</CreateTime>";
-        if($KfAccount !== null){
-            $textTpl .= "<TransInfo>
-                           <KfAccount><![CDATA[{$KfAccount}]]></KfAccount>
-                        </TransInfo>";
-        }
-        else{
-            $textTpl .= "<MsgType><![CDATA[transfer_customer_service]]></MsgType>
-                        </xml>";
-        }
 
-        $resultStr = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time());
-        return $resultStr;
-    }
-
-    private function get_content($str, $keyword)	// 匹配字符串中关键词后面的内容
+    // 匹配字符串中关键词后面的内容
+    private function get_content($str, $keyword)
     {
         $pregStr = "/(?<=".$keyword.").*/u";	// 正则表达式语法，向后查找
         preg_match($pregStr, $str, $matches);	// 使用向后查找可以匹配例如“图书图书”的情况
@@ -474,4 +378,4 @@ class wechatCallbackapiTest
         unset($postObj);
     }
 }
-// end of main.php
+// end of weather.php

@@ -1,7 +1,6 @@
 <?php
 /**
- * wechat 综合示例
- * 主要功能：天气、日历、笑话、翻译、快递、智能机器人、刮刮乐抽奖、多客服等
+ * wechat 百度地图周边收拾功能
  */
 
 // 认证 token
@@ -12,9 +11,7 @@ $wechatObj->valid();    // 调用验证方法（此方法内调用回复方法�
 class wechatCallbackapiTest
 {
     function __construct() {
-        require("tools/access_token.php");
-        require("tools/iBotCloud.php");
-        require("tools/simple_html_dom.php");
+        require("../tools/access_token.php");
     }
 
     public function valid()
@@ -68,9 +65,13 @@ class wechatCallbackapiTest
                     $locationY = $postObj->Location_Y;
                     $label = $postObj->Label;
                     $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&region=".urlencode($label)."&coord_type=wgs84&radius=1000&output=html&src=yourCompanyName%7cwechat";
-                    // 这里回复图文消息效果更好
-                    $contentstr = "{$nickname}，你好，已为你找到周边美食：{$url}。";
-                    $resultStr = $this->ReplyText($postObj, $contentstr);
+
+                    $news = array('title' => "周边美食搜索",
+                        'description' => "{$nickname}，已为你找到周边美食，请点击查看。",
+                        'picurl' => "http://ww4.sinaimg.cn/large/98d2e36bjw1eqjmlcuqbvj20a0069aa6.jpg",
+                        'url' => $url
+                    );
+                    $resultStr = $this->ReplyOneNews($postObj, $news);
                     break;
                 case 'image':
                     // 用户发送过来的图片再发送回去
