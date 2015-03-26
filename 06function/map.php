@@ -425,4 +425,4 @@ class wechatCallbackapiTest
         unset($postObj);
     }
 }
-// end of main.php
+// end of map.php
