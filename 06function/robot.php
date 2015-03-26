@@ -1,6 +1,6 @@
 <?php
 /**
- * wechat 百度地图周边收拾功能
+ * wechat 小黄鸡（智能问答机器人）功能实现
  */
 
 // 认证 token
@@ -12,6 +12,7 @@ class wechatCallbackapiTest
 {
     function __construct() {
         require("../tools/access_token.php");
+        require("../tools/iBotCloud.php");
     }
 
     public function valid()
@@ -58,7 +59,7 @@ class wechatCallbackapiTest
                     $openid = $postObj->FromUserName;
                     $data = file_get_contents("https://api.weixin.qq.com/cgi-bin/user/info?access_token={$accessToken}&openid={$openid}&lang=zh_CN");
                     $userData = json_decode($data, true);
-                    // 获取昵称，还可以获取其它信息（获取到的信息应存储起来，一遍下次调用），详见官方文档。此功能可用于实现微信墙
+                    // 获取昵称，还可以获取其它信息，详见官方文档。此功能可用于实现微信墙
                     $nickname = $userData['nickname'];
                     // 百度地图 web端URI API http://developer.baidu.com/map/index.php?title=uri/api/web
                     $locationX = $postObj->Location_X;
@@ -156,7 +157,18 @@ class wechatCallbackapiTest
 
         if(!empty( $keyword ))
         {
-            if($keyword == "天气"){
+            if($keyword == "抽奖"){
+                $opnid = $postObj->FromUserName;
+                $news = array('title' => "刮刮乐抽奖",
+                    'description' => "每日一刮",
+                    'picurl' => "http://ww1.sinaimg.cn/large/98d2e36bjw1eqjjuipnxrj20a00630sy.jpg",
+                    // 传入用户 FromUserName 判断用户，此值由用户微信号和公众号生成，对公众号来说全局唯一，唯一标识一个用户。
+                    // 刮奖的结果可以存储起来，刮过奖的用户不允许再抽奖
+                    'url' => "http://demo.iyaozhen.com/weixin-example-code/guaguale/guaguale.html?openid={$opnid}",   // 这里换成自己服务器的地址
+                );
+                $resultStr = $this->ReplyOneNews($postObj, $news);
+            }
+            elseif($keyword == "天气"){
                 $apiUrl = "http://tq.360.cn/api/weatherquery/query?app=tq360&code=101010100&_jsonp=renderData&_=".time(); // 360天气接口 http://tq.360.cn
                 // 其它天气接口：http://developer.baidu.com/map/carapi-7.htm  http://blog.csdn.net/zgyulongfei/article/details/7956118
                 $weatherText = file_get_contents($apiUrl);
@@ -186,6 +198,37 @@ class wechatCallbackapiTest
                 // 上传日历图片获取 media id 然后回复给用户
                 $mediaId = $this->uploadImg("../calendar.png");
                 $resultStr = $this->ReplyImage($postObj, $mediaId);
+            }
+            elseif($keyword == "笑话"){
+                // 抓取糗事百科纯文字分类前3个
+                $url = "http://wap2.qiushibaike.com/text";
+                $htmlDom = file_get_contents($url);
+                /*
+                 * 这里使用的是经典的 PHP Simple HTML DOM Parser库
+                 * 推荐使用性能更好的 html-parser：https://github.com/bupt1987/html-parser
+                 * 但要求的php版本较高，且需要特定的库支持
+                */
+                $html = new simple_html_dom();
+                $html->load($htmlDom); // 载入字符串
+                $qiushi = $html->find('.qiushi');
+                // 只取3条
+                for($i = 0, $contentStr = "---糗事百科---"; $i < 3; $i++){
+                    $content = $qiushi[$i];
+                    $userDom = $content->find('.user', 0);
+                    if($userDom === null){
+                        $user = '匿名用户';
+                    }
+                    else{
+                        $user = trim($userDom->plaintext);
+                    }
+                    $jokeDom = $content->innertext;
+                    // 去除其它信息
+                    $patterns = array("/<br\/>/", "/<p[\s\S]*?<\/p>/");
+                    $joke = trim(preg_replace($patterns, '', $jokeDom));
+                    $contentStr .= "\n{$user}: {$joke}";
+                }
+
+                $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             elseif(strpos($keyword, "翻译") === 0){
                 $word = $this->get_content($keyword, "翻译"); // 获得需要翻译的文本
@@ -240,7 +283,15 @@ class wechatCallbackapiTest
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             else{
-                $contentStr = "无匹配上的关键词";
+                // 没有匹配到关键词调用机器人回答
+                $iBot = new iBotCloud();
+                $answerStr = $iBot->get_answer($keyword, $postObj->FromUserName);
+                if(preg_match("/auth result/", $answerStr)){
+                    $contentStr = "机器人歇菜了。";
+                }
+                else{
+                    $contentStr = trim($answerStr);
+                }
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
         }else{
@@ -425,4 +476,4 @@ class wechatCallbackapiTest
         unset($postObj);
     }
 }
-// end of main.php
+// end of robot.php

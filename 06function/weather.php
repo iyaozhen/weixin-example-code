@@ -217,8 +217,7 @@ class wechatCallbackapiTest
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
             else{
-                // 没有匹配到关键词调用机器人回答
-                $contentStr = "没有匹配的关键词";
+                $contentStr = "无匹配上的关键词";
                 $resultStr = $this->ReplyText($postObj, $contentStr);
             }
         }else{

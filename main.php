@@ -68,9 +68,13 @@ class wechatCallbackapiTest
                     $locationY = $postObj->Location_Y;
                     $label = $postObj->Label;
                     $url = "http://api.map.baidu.com/place/search?query=".urlencode("美食")."&location={$locationX},{$locationY}&region=".urlencode($label)."&coord_type=wgs84&radius=1000&output=html&src=yourCompanyName%7cwechat";
-                    // 这里回复图文消息效果更好
-                    $contentstr = "{$nickname}，你好，已为你找到周边美食：{$url}。";
-                    $resultStr = $this->ReplyText($postObj, $contentstr);
+
+                    $news = array('title' => "周边美食搜索",
+                        'description' => "{$nickname}，已为你找到周边美食，请点击查看。",
+                        'picurl' => "http://ww4.sinaimg.cn/large/98d2e36bjw1eqjmlcuqbvj20a0069aa6.jpg",
+                        'url' => $url
+                    );
+                    $resultStr = $this->ReplyOneNews($postObj, $news);
                     break;
                 case 'image':
                     // 用户发送过来的图片再发送回去
